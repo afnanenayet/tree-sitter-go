@@ -103,6 +103,8 @@ module.exports = grammar({
 
   rules: {
     source_file: $ => repeat(choice(
+      // Unlike a Go compiler, we accept statements at top-level to enable
+      // parsing of partial code snippets in documentation (see #63).
       seq($._statement, terminator),
       seq($._top_level_declaration, optional(terminator)),
     )),
@@ -212,7 +214,7 @@ module.exports = grammar({
       field('name', $._field_identifier),
       field('parameters', $.parameter_list),
       field('result', optional(choice($.parameter_list, $._simple_type))),
-      field('body', optional($.block))
+      field('body', $.block)
     )),
 
     type_parameter_list: $ => seq(
@@ -232,7 +234,7 @@ module.exports = grammar({
     ),
 
     parameter_declaration: $ => seq(
-      field('name', commaSep($.identifier)),
+      commaSep(field('name', $.identifier)),
       field('type', $._type)
     ),
 
@@ -344,7 +346,7 @@ module.exports = grammar({
     field_declaration: $ => seq(
       choice(
         seq(
-          field('name', commaSep1($._field_identifier)),
+          commaSep1(field('name', $._field_identifier)),
           field('type', $._type)
         ),
         seq(
@@ -845,11 +847,12 @@ module.exports = grammar({
     interpreted_string_literal: $ => seq(
       '"',
       repeat(choice(
-        token.immediate(prec(1, /[^"\n\\]+/)),
+        $._interpreted_string_literal_basic_content,
         $.escape_sequence
       )),
       '"'
     ),
+    _interpreted_string_literal_basic_content: $ => token.immediate(prec(1, /[^"\n\\]+/)),
 
     escape_sequence: $ => token.immediate(seq(
       '\\',
