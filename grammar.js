@@ -186,16 +186,12 @@ module.exports = grammar({
       'var',
       choice(
         $.var_spec,
-        seq(
-          '(',
-          repeat(seq($.var_spec, terminator)),
-          ')',
-        ),
+        $.var_spec_list,
       ),
     ),
 
     var_spec: $ => seq(
-      field('name', commaSep1($.identifier)),
+      commaSep1(field('name', $.identifier)),
       choice(
         seq(
           field('type', $._type),
@@ -203,6 +199,12 @@ module.exports = grammar({
         ),
         seq('=', field('value', $.expression_list)),
       ),
+    ),
+
+    var_spec_list: $ => seq(
+      '(',
+      repeat(seq($.var_spec, terminator)),
+      ')',
     ),
 
     function_declaration: $ => prec.right(1, seq(
