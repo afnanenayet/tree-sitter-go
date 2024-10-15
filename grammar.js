@@ -801,7 +801,11 @@ module.exports = grammar({
     // - a field identifier (when T is a struct), or
     // - a literal_element (when T is an array).
     // The first two cases cannot be distinguished without type information.
-    keyed_element: $ => seq($.literal_element, ':', $.literal_element),
+    keyed_element: $ => seq(
+      field('key', $.literal_element),
+      ':',
+      field('value', $.literal_element),
+    ),
 
     func_literal: $ => seq(
       'func',
@@ -927,8 +931,7 @@ module.exports = grammar({
  *
  * @param {RuleOrLiteral} separator
  *
- * @return {SeqRule}
- *
+ * @returns {SeqRule}
  */
 function sep1(rule, separator) {
   return seq(rule, repeat(seq(separator, rule)));
@@ -939,8 +942,7 @@ function sep1(rule, separator) {
  *
  * @param {Rule} rule
  *
- * @return {SeqRule}
- *
+ * @returns {SeqRule}
  */
 function commaSep1(rule) {
   return seq(rule, repeat(seq(',', rule)));
@@ -951,8 +953,7 @@ function commaSep1(rule) {
  *
  * @param {Rule} rule
  *
- * @return {ChoiceRule}
- *
+ * @returns {ChoiceRule}
  */
 function commaSep(rule) {
   return optional(commaSep1(rule));
